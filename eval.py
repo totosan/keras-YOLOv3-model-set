@@ -299,7 +299,7 @@ def yolo_predict_pb(model, image, anchors, num_classes, model_image_size, conf_t
     return pred_boxes, pred_classes, pred_scores
 
 
-def yolo_predict_onnx(model, image, anchors, num_classes, conf_threshold, elim_grid_sense, v5_decode):
+def yolo_predict_onnx(model, image, anchors, num_classes, model_image_size, conf_threshold, elim_grid_sense, v5_decode):
     input_tensors = []
     for i, input_tensor in enumerate(model.get_inputs()):
         input_tensors.append(input_tensor)
@@ -308,7 +308,7 @@ def yolo_predict_onnx(model, image, anchors, num_classes, conf_threshold, elim_g
     assert len(input_tensors) == 1, 'invalid input tensor number.'
 
     batch, height, width, channel = input_tensors[0].shape
-    model_image_size = (height, width)
+    #model_image_size = (height, width)
 
     # prepare input image
     image_data = preprocess_image(image, model_image_size)
@@ -380,6 +380,8 @@ def get_prediction_class_records(model, model_format, annotation_records, anchor
     pred_classes_records = OrderedDict()
     pbar = tqdm(total=len(annotation_records), desc='Eval model')
     for (image_name, gt_records) in annotation_records.items():
+        THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+        print(os.path.join(THIS_FOLDER, image_name))
         image = Image.open(image_name)
         if image.mode != 'RGB':
             image = image.convert('RGB')
@@ -396,7 +398,7 @@ def get_prediction_class_records(model, model_format, annotation_records, anchor
             pred_boxes, pred_classes, pred_scores = yolo_predict_pb(model, image, anchors, len(class_names), model_image_size, conf_threshold, elim_grid_sense, v5_decode)
         # support of ONNX model
         elif model_format == 'ONNX':
-            pred_boxes, pred_classes, pred_scores = yolo_predict_onnx(model, image, anchors, len(class_names), conf_threshold, elim_grid_sense, v5_decode)
+            pred_boxes, pred_classes, pred_scores = yolo_predict_onnx(model, image, anchors, len(class_names), model_image_size, conf_threshold, elim_grid_sense, v5_decode)
         # normal keras h5 model
         elif model_format == 'H5':
             pred_boxes, pred_classes, pred_scores = yolo_predict_keras(model, image, anchors, len(class_names), model_image_size, conf_threshold, elim_grid_sense, v5_decode)
