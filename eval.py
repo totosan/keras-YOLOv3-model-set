@@ -91,7 +91,7 @@ def transform_gt_record(gt_records, class_names):
     gt_classes = []
     gt_scores = []
     for (coordinate, class_name) in gt_records.items():
-        gt_box = [int(x) for x in coordinate.split(',')]
+        gt_box = [round(float(x)) for x in coordinate.split(',')]
         gt_class = class_names.index(class_name)
 
         gt_boxes.append(gt_box)
