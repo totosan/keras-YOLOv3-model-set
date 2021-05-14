@@ -862,26 +862,23 @@ def main():
     parser.add_argument(
         '--category_num', type=int, default=80,
         help='number of object categories [80]')
+    parser.add_argument(
+        '--model_cconfig', type=str, default="weights/darknet53.h5",
+        help='model configuration/ weights')
     args = parser.parse_args()
     if args.category_num <= 0:
         raise SystemExit('ERROR: bad category_num (%d)!' % args.category_num)
 
-    cfg_file_path = '%s.cfg' % args.model
-    if not os.path.isfile(cfg_file_path):
-        raise SystemExit('ERROR: file (%s) not found!' % cfg_file_path)
-    weights_file_path = '%s.weights' % args.model
+    cfg_file_path = args.model
+    if not os.path.isfile(args.model):
+        raise SystemExit('ERROR: file (%s) not found!' % args.model)
+    weights_file_path = '%s' % args.model_cconfig
     if not os.path.isfile(weights_file_path):
         raise SystemExit('ERROR: file (%s) not found!' % weights_file_path)
     output_file_path = '%s.onnx' % args.model
 
-    yolo_dim = args.model.split('-')[-1]
-    if 'x' in yolo_dim:
-        dim_split = yolo_dim.split('x')
-        if len(dim_split) != 2:
-            raise SystemExit('ERROR: bad yolo_dim (%s)!' % yolo_dim)
-        w, h = int(dim_split[0]), int(dim_split[1])
-    else:
-        h = w = int(yolo_dim)
+    w = 416
+    h = 416
     if h % 32 != 0 or w % 32 != 0:
         raise SystemExit('ERROR: bad yolo_dim (%s)!' % yolo_dim)
 
