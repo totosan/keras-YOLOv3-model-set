@@ -17,7 +17,7 @@ echo ""
 echo "1 Training"
 echo "----------"
 #rm -r ./logs/000/*
-python train.py --gpu_num 2 --batch_size 32 --val_split 0.2 \
+python train.py --gpu_num 1 --batch_size 32 --val_split 0.2 \
     --model_type $model --anchors_path $anchor --annotation_file $annotation_file --classes_path $class_path --model_image_size=416x416
 
 echo "2 Dumping Model"
