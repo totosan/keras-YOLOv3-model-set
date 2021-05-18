@@ -1,7 +1,9 @@
 *.jpg
 *.png
+*.mp4
 *.weights
 *.h5
+*.onnx
 logs/
 *_test.py
 
