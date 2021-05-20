@@ -1,0 +1,39 @@
+name: yolo2
+channels:
+  - conda-forge
+  - anaconda
+  - defaults
+dependencies:
+  - python=3.7
+  - mesa-libgl-cos6-x86_64
+  - pip
+  - pip:
+    - azureml-core
+    - azureml-defaults
+    - numpy==1.17.5
+    - setuptools
+    - scipy
+    - scikit-learn
+    - opencv-python-headless
+   # - opencv-contrib-python
+    - keras_applications
+    - tensorflow-gpu
+    - tensorflow-model-optimization
+    - tensorflow-addons
+    - matplotlib
+    - tqdm
+    - pillow
+    - mnn
+    - Cython
+    - pycocotools
+    - keras2onnx
+    - tf2onnx
+    - onnx
+    - onnxruntime
+    - tfcoreml
+    - sympy
+    - imgaug
+    - imagecorruptions
+    - bokeh
+    - tidecv
+    - MNN==1.1.0
