@@ -7,6 +7,8 @@ import subprocess
 from pathlib import Path
 from azureml.core import Workspace, Dataset
 from azureml.core import ScriptRunConfig, Experiment, Environment
+from azureml.data import OutputFileDatasetConfig
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
@@ -31,6 +33,12 @@ if __name__ == "__main__":
         default="gpucluster",
         help="Name of the used compute system (cluster, instance,...) in Azure ML",
     )
+    parser.add_argument(
+        "--download_weights",
+        default=False,
+        action="store_true",
+        help="Add this flag, if you need to download darnet pretrained model.",
+    )
 
     
     FLAGS = parser.parse_args()
@@ -38,31 +46,42 @@ if __name__ == "__main__":
     
     
     # get workspace
+    # ------------------------
     ws = Workspace.from_config()
     ds = ws.get_default_datastore()
 
+    
+    # Prepare Data: 
+    #---------------------------
+    
     # download weights & convert
-    #cmdDownloadWeights = f"wget -O weights/yolov4.weights https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights"
-    #subprocess.call(cmdDownloadWeights, shell=True)
-    #cmdConvertWeights = f"python tools/model_converter/convert.py --yolo4_reorder cfg/yolov4.cfg weights/yolov4.weights weights/yolov4.h5"
-    #subprocess.call(cmdConvertWeights, shell=True)
+    if FLAGS.download_weights:
+        cmdDownloadWeights = f"wget -O weights/yolov4.weights https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights"
+        subprocess.call(cmdDownloadWeights, shell=True)
+        cmdConvertWeights = f"python tools/model_converter/convert.py --yolo4_reorder cfg/yolov4.cfg weights/yolov4.weights weights/yolov4.h5"
+        subprocess.call(cmdConvertWeights, shell=True)
     
     print("Uploading weights...")
     ds.upload_files(["./weights/yolov4.h5"],target_path="Yolo4/Weights",overwrite=False, show_progress=True)
 
 
+    output_data1 = OutputFileDatasetConfig(destination = (ds, 'outputdataset/{run-id}'))
+    output_data_dataset = output_data1.register_on_complete(name = 'prepared_output_data')
+
     # get root of git repo
     prefix = Path(__file__).resolve().parents[1]
 
-    # getting images from datastorage
+    # images from datastorage
     training_data_path = Dataset.File.from_files((ds, "YoloTraining/Data/Source_Images/Training_Images/vott-csv-export/"))  
     annotation_path = Dataset.File.from_files((ds,"YoloTraining/Data/Source_Images/Training_Images/vott-csv-export/*.csv"))
+    
+    # weights from datastorage
     weights_ds = Dataset.File.from_files((ds, "Yolo4/Weights/"))
     
-    # training script
-    script_dir = str(prefix.joinpath("."))
-    script_name = "train.py"
-
+    
+    # Prepare environment
+    #------------------------
+    
     # environment file
     environment_file = str(prefix.joinpath("mlops/pip-env.yml"))
 
@@ -89,6 +108,9 @@ if __name__ == "__main__":
             "--gpu_num",1,
             "--batch_size",16,
             "--val_split",0.2,
+            "--decay_type", "exponential", #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
+            "--transfer_epoch",20,
+            "--total_epoch",20, #default 250
             "--model_type","yolo4_mobilenetv2_lite",
             "--anchors_path","configs/yolo4_anchors.txt",
             "--annotation_file",annotation_path.to_path()[0].strip("/"),
@@ -100,7 +122,14 @@ if __name__ == "__main__":
         ]
     
     run_id="yolo-4"
-            
+
+    # Do training
+    # --------------------
+    
+    # prepare training script
+    script_dir = str(prefix.joinpath("."))
+    script_name = "train.py"
+
     # create job config
     src = ScriptRunConfig(
         source_directory=script_dir,
@@ -110,19 +139,46 @@ if __name__ == "__main__":
         arguments=args
     )
 
-    # submit job
-    run = Experiment(ws, run_id, experiment_name).submit(src)
-
+    experiment = Experiment(ws, run_id, experiment_name)
+    # submit training job
+    run = experiment.submit(src)
     run.wait_for_completion(show_output=False)
     
-    # # register models (checkpoint, staged & final together)
-    # model_name = "yolov3"
-    # if(FLAGS.is_tiny):
-    #     model_name = model_name + "-tiny"
-    #     
-    # model = run.register_model(model_name=model_name,
-    #                         tags={'area': 'Yolo'},
-    #                         model_path='./outputs')
-    # print("Registered model:")
-    # print(model.name, model.id, model.version, sep='\t')
+    
+    # evaluate model
+    #----------------
+    
+    script_name = "eval.py"
+    args_eval=[
+        "--model_path","./outputs/trained_final.h5",
+        "--anchors_path","configs/yolo4_anchors.txt",
+        "--classes_path","configs/custom_classes.txt",
+        "--model_image_size","416x416",
+        "--eval_type","VOC",
+        "--iou_threshold","0.5",
+        "--conf_threshold","0.6",
+        "--annotation_file",annotation_path.to_path()[0].strip("/"),
+        "--save_result",
+    ]
+    # create job config
+    src = ScriptRunConfig(
+        source_directory=script_dir,
+        script=script_name,
+        environment=env,
+        compute_target=compute_name,
+        arguments=args_eval
+    )
+
+    # submit evaluation job
+    run = experiment.submit(src)
+    run.wait_for_completion(show_output=False)
+    
+    # register models (checkpoint, staged & final together)
+    # ------------------------------------------------------
+    model_name = "yolov4"    
+    model = run.register_model(model_name=model_name,
+                            tags={'area': 'Yolo'},
+                            model_path='./outputs')
+    print("Registered model:")
+    print(model.name, model.id, model.version, sep='\t')
 
