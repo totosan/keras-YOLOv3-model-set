@@ -145,34 +145,6 @@ if __name__ == "__main__":
     run.wait_for_completion(show_output=False)
     
     
-    # evaluate model
-    #----------------
-    
-    script_name = "eval.py"
-    args_eval=[
-        "--model_path","./outputs/trained_final.h5",
-        "--anchors_path","configs/yolo4_anchors.txt",
-        "--classes_path","configs/custom_classes.txt",
-        "--model_image_size","416x416",
-        "--eval_type","VOC",
-        "--iou_threshold","0.5",
-        "--conf_threshold","0.6",
-        "--annotation_file",annotation_path.to_path()[0].strip("/"),
-        "--save_result",
-    ]
-    # create job config
-    src = ScriptRunConfig(
-        source_directory=script_dir,
-        script=script_name,
-        environment=env,
-        compute_target=compute_name,
-        arguments=args_eval
-    )
-
-    # submit evaluation job
-    run = experiment.submit(src)
-    run.wait_for_completion(show_output=False)
-    
     # register models (checkpoint, staged & final together)
     # ------------------------------------------------------
     model_name = "yolov4"    
