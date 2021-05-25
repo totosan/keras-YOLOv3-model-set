@@ -10,6 +10,7 @@ dependencies:
   - pip:
     - azureml-core
     - azureml-defaults
+    - azureml-tensorboard
     - numpy==1.17.5
     - setuptools
     - scipy

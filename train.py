@@ -30,6 +30,15 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 optimize_tf_gpu(tf, K)
 
+# Azure ML Logging
+run = Run.get_context()
+
+class LogRunMetrics(Callback):
+    # callback at the end of every epoch
+    def on_epoch_end(self, epoch, log):
+        # log a value repeated which creates a list
+        run.log('Loss', log['val_loss'])
+        run.log('Accuracy', log['val_accuracy'])
 
 def main(args):
     annotation_file = args.annotation_file
@@ -42,8 +51,6 @@ def main(args):
     anchors = get_anchors(args.anchors_path)
     num_anchors = len(anchors)
 
-    # Azure ML Logging
-    run = Run.get_context()
 
     # get freeze level according to CLI option
     if args.weights_path:
@@ -58,7 +65,7 @@ def main(args):
         log_dir = args.log_dir
         
     # callbacks for training process
-    logging = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=False, write_grads=False, write_images=False, update_freq='batch')
+    logging = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=False, write_grads=False, write_images=False, update_freq='batch') 
     checkpoint = ModelCheckpoint(os.path.join(log_dir, 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5'),
         monitor='val_loss',
         mode='min',
@@ -70,7 +77,7 @@ def main(args):
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=1, mode='min')
     terminate_on_nan = TerminateOnNaN()
 
-    callbacks=[logging, checkpoint, reduce_lr, early_stopping, terminate_on_nan]
+    callbacks=[LogRunMetrics(), logging, checkpoint, reduce_lr, early_stopping, terminate_on_nan]
 
     # get train&val dataset
     dataset = get_dataset(annotation_file,root_path=trainingsDataPath)
@@ -257,8 +264,6 @@ def main(args):
     if args.model_pruning:
         model = sparsity.strip_pruning(model)
     model.save(os.path.join(log_dir, 'trained_final.h5'))
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

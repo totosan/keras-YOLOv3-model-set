@@ -9,7 +9,6 @@ from azureml.core import Workspace, Dataset
 from azureml.core import ScriptRunConfig, Experiment, Environment
 from azureml.data import OutputFileDatasetConfig
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
     """
@@ -109,7 +108,7 @@ if __name__ == "__main__":
             "--batch_size",16,
             "--val_split",0.2,
             "--decay_type", "exponential", #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
-            "--transfer_epoch",20,
+            "--transfer_epoch",15,
             "--total_epoch",20, #default 250
             "--model_type","yolo4_mobilenetv2_lite",
             "--anchors_path","configs/yolo4_anchors.txt",
@@ -140,10 +139,11 @@ if __name__ == "__main__":
     )
 
     experiment = Experiment(ws, run_id, experiment_name)
+    
     # submit training job
     run = experiment.submit(src)
     run.wait_for_completion(show_output=False)
-    
+ 
     
     # register models (checkpoint, staged & final together)
     # ------------------------------------------------------
