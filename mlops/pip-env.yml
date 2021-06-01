@@ -37,4 +37,3 @@ dependencies:
     - imagecorruptions
     - bokeh
     - tidecv
-    - MNN==1.1.0

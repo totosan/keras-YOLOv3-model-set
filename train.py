@@ -7,7 +7,7 @@ import os, time, random, argparse
 import numpy as np
 import tensorflow.keras.backend as K
 #from tensorflow.keras.utils import multi_gpu_model
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, LearningRateScheduler, EarlyStopping, TerminateOnNaN, LambdaCallback
+from tensorflow.keras.callbacks import Callback, TensorBoard, ModelCheckpoint, ReduceLROnPlateau, LearningRateScheduler, EarlyStopping, TerminateOnNaN, LambdaCallback
 from tensorflow_model_optimization.sparsity import keras as sparsity
 
 from yolo5.model import get_yolo5_train_model
@@ -37,8 +37,9 @@ class LogRunMetrics(Callback):
     # callback at the end of every epoch
     def on_epoch_end(self, epoch, log):
         # log a value repeated which creates a list
-        run.log('Loss', log['val_loss'])
-        run.log('Accuracy', log['val_accuracy'])
+        run.log('EpochNr', epoch)
+        run.log('Loss', log['loss'])
+        run.log('Val_Loss', log['val_loss'])
 
 def main(args):
     annotation_file = args.annotation_file
