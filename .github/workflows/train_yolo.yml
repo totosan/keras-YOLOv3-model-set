@@ -11,7 +11,7 @@ on:
     paths:
       - .github/workflows/train_yolo.yml
       - requirements.txt
-      - aml-requirements.txt
+      - mlops/aml-requirements.txt
 
   workflow_dispatch:
 
@@ -31,7 +31,7 @@ jobs:
       with: 
         python-version: "3.7"
     - name: pip install
-      run: pip install --upgrade -r aml-requirements.txt
+      run: pip install --upgrade -r mlops/aml-requirements.txt
     - name: azure login
       uses: azure/login@v1
       with:
