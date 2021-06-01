@@ -7,7 +7,7 @@ import os, time, random, argparse
 import numpy as np
 import tensorflow.keras.backend as K
 #from tensorflow.keras.utils import multi_gpu_model
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, LearningRateScheduler, EarlyStopping, TerminateOnNaN, LambdaCallback
+from tensorflow.keras.callbacks import Callback, TensorBoard, ModelCheckpoint, ReduceLROnPlateau, LearningRateScheduler, EarlyStopping, TerminateOnNaN, LambdaCallback
 from tensorflow_model_optimization.sparsity import keras as sparsity
 
 from yolo5.model import get_yolo5_train_model
@@ -20,6 +20,8 @@ from common.utils import get_classes, get_anchors, get_dataset, optimize_tf_gpu
 from common.model_utils import get_optimizer
 from common.callbacks import EvalCallBack, DatasetShuffleCallBack
 
+from azureml.core import Run
+
 # Try to enable Auto Mixed Precision on TF 2.0
 os.environ['TF_ENABLE_AUTO_MIXED_PRECISION'] = '1'
 os.environ['TF_AUTO_MIXED_PRECISION_GRAPH_REWRITE_IGNORE_PERFORMANCE'] = '1'
@@ -28,9 +30,20 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 optimize_tf_gpu(tf, K)
 
+# Azure ML Logging
+run = Run.get_context()
+
+class LogRunMetrics(Callback):
+    # callback at the end of every epoch
+    def on_epoch_end(self, epoch, log):
+        # log a value repeated which creates a list
+        run.log('EpochNr', epoch)
+        run.log('Loss', log['loss'])
+        run.log('Val_Loss', log['val_loss'])
 
 def main(args):
     annotation_file = args.annotation_file
+    trainingsDataPath = args.trainings_data_path
     log_dir = os.path.join('logs', '000')
     classes_path = args.classes_path
     class_names = get_classes(classes_path)
@@ -38,6 +51,7 @@ def main(args):
 
     anchors = get_anchors(args.anchors_path)
     num_anchors = len(anchors)
+
 
     # get freeze level according to CLI option
     if args.weights_path:
@@ -48,8 +62,11 @@ def main(args):
     if args.freeze_level is not None:
         freeze_level = args.freeze_level
 
+    if args.log_dir:
+        log_dir = args.log_dir
+        
     # callbacks for training process
-    logging = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=False, write_grads=False, write_images=False, update_freq='batch')
+    logging = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=False, write_grads=False, write_images=False, update_freq='batch') 
     checkpoint = ModelCheckpoint(os.path.join(log_dir, 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5'),
         monitor='val_loss',
         mode='min',
@@ -61,10 +78,10 @@ def main(args):
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=1, mode='min')
     terminate_on_nan = TerminateOnNaN()
 
-    callbacks=[logging, checkpoint, reduce_lr, early_stopping, terminate_on_nan]
+    callbacks=[LogRunMetrics(), logging, checkpoint, reduce_lr, early_stopping, terminate_on_nan]
 
     # get train&val dataset
-    dataset = get_dataset(annotation_file)
+    dataset = get_dataset(annotation_file,root_path=trainingsDataPath)
     if args.val_annotation_file:
         val_dataset = get_dataset(args.val_annotation_file)
         num_train = len(dataset)
@@ -249,8 +266,6 @@ def main(args):
         model = sparsity.strip_pruning(model)
     model.save(os.path.join(log_dir, 'trained_final.h5'))
 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # Model definition options
@@ -310,7 +325,11 @@ if __name__ == '__main__':
         help='Number of GPU to use, default=%(default)s')
     parser.add_argument('--model_pruning', default=False, action="store_true",
         help='Use model pruning for optimization, only for TF 1.x')
-
+    parser.add_argument('--trainings_data_path', default=None, type=str,
+        help='Path, where all images files are stored.')
+    parser.add_argument('--log_dir', default=None, type=str,
+        help='Path, where resulting model is stored.')
+        
     # Evaluation options
     parser.add_argument('--eval_online', default=False, action="store_true",
         help='Whether to do evaluation on validation dataset during training')
@@ -320,6 +339,14 @@ if __name__ == '__main__':
         help='Whether to save checkpoint with best evaluation result')
 
     args = parser.parse_args()
+    
+    print("")
+    print("== ARGUMENTS ======================")
+    for arg in vars(args):
+        print(f"{arg} : {getattr(args, arg)} ")
+    print("===================================")    
+    print("")
+    
     height, width = args.model_image_size.split('x')
     args.model_image_size = (int(height), int(width))
 

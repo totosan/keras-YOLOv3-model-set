@@ -4,14 +4,13 @@ scipy
 scikit-learn
 opencv-python-headless
 opencv-contrib-python
-tensorflow-gpu
+tensorflow
 keras_applications
 tensorflow-model-optimization
-tensorflow-addons
 matplotlib
 tqdm
 pillow
-mnn==1.1.0
+mnn
 Cython
 pycocotools
 keras2onnx

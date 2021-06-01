@@ -1,7 +1,9 @@
 *.jpg
 *.png
+*.mp4
 *.weights
 *.h5
+*.onnx
 logs/
 *_test.py
 
@@ -106,3 +108,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+#loca dev env
+.vscode
+.DS_Store

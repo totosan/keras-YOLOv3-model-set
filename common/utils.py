@@ -108,6 +108,22 @@ def get_dataset(annotation_file, shuffle=True):
 
     return lines
 
+def get_dataset(annotation_file, root_path=None, shuffle=True):
+    if not root_path:
+        root_path = "."    
+    annotationFilePath = os.path.join(root_path,annotation_file)        
+    print(f"Annotationfile's path: {annotationFilePath}")
+    with open(annotationFilePath) as f:
+        lines = f.readlines()
+        lines = [os.path.join(root_path, line.strip()) for line in lines]
+
+    if shuffle:
+        np.random.seed(int(time.time()))
+        np.random.shuffle(lines)
+        #np.random.seed(None)
+
+    return lines
+
 def draw_label(image, text, color, coords):
     font = cv2.FONT_HERSHEY_PLAIN
     font_scale = 1.
