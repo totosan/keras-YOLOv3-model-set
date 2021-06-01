@@ -1,4 +1,4 @@
-name: train-yolo3-job
+name: train-yolo-job
 on: 
   push:
     branches:
