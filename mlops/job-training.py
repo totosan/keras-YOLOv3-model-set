@@ -122,6 +122,8 @@ if __name__ == "__main__":
     
     run_id="yolo-4"
 
+    [print(item) for item in args]
+
     # Do training
     # --------------------
     
