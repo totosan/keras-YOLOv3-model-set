@@ -24,7 +24,7 @@ dependencies:
     - matplotlib
     - tqdm
     - pillow
-    - mnn=1.1.0
+    - mnn==1.1.0
     - Cython
     - pycocotools
     - keras2onnx
