@@ -60,8 +60,8 @@ if __name__ == "__main__":
         cmdConvertWeights = f"python tools/model_converter/convert.py --yolo4_reorder cfg/yolov4.cfg weights/yolov4.weights weights/yolov4.h5"
         subprocess.call(cmdConvertWeights, shell=True)
     
-    print("Uploading weights...")
-    ds.upload_files(["./weights/yolov4.h5"],target_path="Yolo4/Weights",overwrite=False, show_progress=True)
+        print("Uploading weights...")
+        ds.upload_files(["./weights/yolov4.h5"],target_path="Yolo4/Weights",overwrite=False, show_progress=True)
 
 
     output_data1 = OutputFileDatasetConfig(destination = (ds, 'outputdataset/{run-id}'))
