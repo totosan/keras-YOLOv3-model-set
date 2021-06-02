@@ -109,7 +109,7 @@ if __name__ == "__main__":
             "--val_split",0.1,
             "--decay_type", None, #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
             "--transfer_epoch",20,
-            "--total_epoch",100, #default 250
+            "--total_epoch",50, #default 250
             "--model_type","yolo4_mobilenetv2_lite",
             "--anchors_path","configs/yolo4_anchors.txt",
             "--annotation_file",annotation_path.to_path()[0].strip("/"),
