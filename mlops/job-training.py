@@ -61,7 +61,7 @@ if __name__ == "__main__":
         subprocess.call(cmdConvertWeights, shell=True)
     
         print("Uploading weights...")
-        ds.upload_files(["./weights/yolov4.h5"],target_path="Yolo4/Weights",overwrite=False, show_progress=True)
+        ds.upload_files(["./weights/yolov3-tiny.h5"],target_path="Yolo3/Weights",overwrite=False, show_progress=True)
 
 
     output_data1 = OutputFileDatasetConfig(destination = (ds, 'outputdataset/{run-id}'))
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     annotation_path = Dataset.File.from_files((ds,"YoloTraining/Data/Source_Images/Training_Images/vott-csv-export/*.csv"))
     
     # weights from datastorage
-    weights_ds = Dataset.File.from_files((ds, "Yolo4/Weights/"))
+    weights_ds = Dataset.File.from_files((ds, "Yolo3/Weights/"))
     
     
     # Prepare environment
@@ -105,10 +105,11 @@ if __name__ == "__main__":
     weightsPath = weights_ds.as_mount()
     args=[
             # model
-            "--model_type","yolo4_mobilenetv2_lite",
-            "--anchors_path","configs/yolo4_anchors.txt",
+            "--model_type","tiny_yolo3_darknet",
+            "--anchors_path","configs/tiny_yolo3_anchors.txt",
             "--annotation_file",annotation_path.to_path()[0].strip("/"),
-            "--classes_path","configs/custom_classes.txt",
+            "--classes_path","configs/coco_classes.txt",
+            "--weights_path", weightsPath,
             #compute
             "--gpu_num",1,
             "--batch_size",16,
@@ -119,7 +120,6 @@ if __name__ == "__main__":
             "--transfer_epoch",20,
             "--total_epoch",50, #default 250
             #data
-            #"--weights_path", weightsPath,
             "--trainings_data_path",training_data_path.as_mount(),
             "--log_dir", "./outputs",
         ]
