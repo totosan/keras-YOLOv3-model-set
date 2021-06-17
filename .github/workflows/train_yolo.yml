@@ -41,4 +41,8 @@ jobs:
     - name: attach to workspace
       run: az ml folder attach -w ML-WorkspaceTT -g AI
     - name: run workflow
-      run: python ./mlops/job-training.py --env_name ${{ env.AML_Environment }} --experiment_name ${{ env.AML_Experiment }} --compute_name ${{ env.AML_Compute }}
+      run: |
+        python ./mlops/job-training.py \
+          --env_name ${{ env.AML_Environment }} \
+          --experiment_name ${{ env.AML_Experiment }} \
+          --compute_name ${{ env.AML_Compute }}

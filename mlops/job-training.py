@@ -104,17 +104,21 @@ if __name__ == "__main__":
     os.makedirs("./outputs", exist_ok=True)
     weightsPath = weights_ds.as_mount()
     args=[
-            "--gpu_num",1,
-            "--batch_size",16,
-            "--val_split",0.1,
-            "--decay_type", 'cosine', #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
-            "--transfer_epoch",20,
-            "--total_epoch",50, #default 250
+            # model
             "--model_type","yolo4_mobilenetv2_lite",
             "--anchors_path","configs/yolo4_anchors.txt",
             "--annotation_file",annotation_path.to_path()[0].strip("/"),
             "--classes_path","configs/custom_classes.txt",
+            #compute
+            "--gpu_num",1,
+            "--batch_size",16,
+            "--val_split",0.1,
             "--model_image_size","416x416",
+            #training
+            "--decay_type", 'cosine', #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
+            "--transfer_epoch",20,
+            "--total_epoch",50, #default 250
+            #data
             #"--weights_path", weightsPath,
             "--trainings_data_path",training_data_path.as_mount(),
             "--log_dir", "./outputs",

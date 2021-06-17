@@ -1,11 +1,11 @@
 #/bin/bash
-
+set -e
 # Build Docker
 docker build \
---build-arg CLASSES_NAME='configs/custom_classes.txt' \
---build-arg MODEL_TYPE='yolo4_mobilenetv2_lite' \
---build-arg ANCHORS_PATH='configs/yolo4_anchors.txt' \
---build-arg WEIGHTS_PATH='yolo4_mobilenetv2_lite.h5' \
+--build-arg CLASSES_NAME='configs/coco_classes.txt' \
+--build-arg MODEL_TYPE='tiny_yolo3_darknet' \
+--build-arg ANCHORS_PATH='configs/tiny_yolo3_anchors.txt' \
+--build-arg WEIGHTS_PATH='weights/yolov3-tiny.h5' \
 -t totosan/ml-carsign:local . -f ./mlops/Dockerfile
 
 # Run Docker

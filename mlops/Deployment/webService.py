@@ -101,18 +101,21 @@ def predict_raw():
     image = Image.open(imageData)
 
     processed_image = preprocess_image(image)
-    prediction, new_image = yolo.detect_image(processed_image)
+    new_image, boxes, classes, scores = yolo.detect_image(processed_image)
 
     response = {}
-    if(prediction):
-        response = {
-            'predictions':[{'left':int(prediction[0][0]),
-            'top':int(prediction[0][1]),
-            'right':int(prediction[0][2]),
-            'bottom':int(prediction[0][3]),
-            'class':float(prediction[0][4]),
-            'score':float(prediction[0][5])}]
-        }
+    prediction =[]
+    for i,box in enumerate(boxes):
+        prediction.append({'left':int(box[0]),
+            'top':int(box[1]),
+            'right':int(box[2]),
+            'bottom':int(box[3]),
+            'class':classes[i],
+            'score':float(scores[i])})
+        
+    response = {
+        'predictions':prediction
+    }
 
     return jsonify(response)
 
