@@ -6,7 +6,7 @@ docker build \
 --build-arg MODEL_TYPE='tiny_yolo3_darknet' \
 --build-arg ANCHORS_PATH='configs/tiny_yolo3_anchors.txt' \
 --build-arg WEIGHTS_PATH='weights/yolov3-tiny.h5' \
--t totosan/ml-carsign:local . -f ./mlops/Dockerfile
+-t totosan/yolov3-tiny:latest . -f ./mlops/Dockerfile
 
 # Run Docker
-docker run -it --rm -p 80:8080 totosan/ml-carsign:local
+docker run -it --rm -p 80:8080 totosan/yolov3-tiny:latest
