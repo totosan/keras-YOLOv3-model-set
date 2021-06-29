@@ -153,7 +153,7 @@ if __name__ == "__main__":
     
     # register models (checkpoint, staged & final together)
     # ------------------------------------------------------
-    model_name = "yolov4"    
+    model_name = "yolov4-birds"    
     model = run.register_model(model_name=model_name,
                             tags={'area': 'Yolo'},
                             model_path='./outputs/trained_final.h5')
