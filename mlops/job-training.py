@@ -116,8 +116,8 @@ if __name__ == "__main__":
             "--model_image_size","416x416",
             #training
             "--decay_type", 'cosine', #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
-            "--transfer_epoch",20,
-            "--total_epoch",50, #default 250
+            "--transfer_epoch",21,
+            "--total_epoch", 250
             #data
             #"--weights_path", weightsPath,
             "--trainings_data_path",training_data_path.as_mount(),

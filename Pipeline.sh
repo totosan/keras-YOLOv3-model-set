@@ -5,12 +5,12 @@ set -e #if something goes wrong, stop!
 model=yolo4_mobilenetv2_lite
 anchor=configs/yolo4_anchors.txt
 class_path=configs/custom_classes.txt
-annotation_file="./vott-csv-export/Tomow-Env-export.csv"
+annotation_file=./vott-csv-export/Birds-export.csv
 
 #Get yoloV4 weights
-wget -O weights/yolov4.weights https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights
+#wget -O weights/yolov4.weights https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights
 #convert weights, if nesseccary
-python tools/model_converter/convert.py --yolo4_reorder cfg/yolov4.cfg weights/yolov4.weights weights/yolov4.h5
+#python tools/model_converter/convert.py --yolo4_reorder cfg/yolov4.cfg weights/yolov4.weights weights/yolov4.h5
 
 #start pipeline
 echo ""

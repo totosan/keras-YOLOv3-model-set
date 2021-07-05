@@ -108,13 +108,15 @@ def get_dataset(annotation_file, shuffle=True):
 
     return lines
 
-def get_dataset(annotation_file, root_path=None, shuffle=True):
+def get_dataset(annotation_file, root_path=None, hasHeader=False, shuffle=True):
     if not root_path:
         root_path = "."    
     annotationFilePath = os.path.join(root_path,annotation_file)        
     print(f"Annotationfile's path: {annotationFilePath}")
     with open(annotationFilePath) as f:
         lines = f.readlines()
+        if hasHeader:
+            lines.pop(0)
         lines = [os.path.join(root_path, line.strip()) for line in lines]
 
     if shuffle:
