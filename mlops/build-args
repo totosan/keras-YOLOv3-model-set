@@ -1,0 +1,5 @@
+CLASSES_NAME="configs/custom_classes.txt"
+MODEL_TYPE="yolo4_mobilenetv2_lite"
+ANCHORS_PATH="configs/yolo4_anchors.txt"
+WEIGHTS_PATH="trained_final.h5"
+CONFIDENCE="0.3"
