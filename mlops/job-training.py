@@ -117,7 +117,7 @@ if __name__ == "__main__":
             #training
             "--decay_type", 'cosine', #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
             "--transfer_epoch",21,
-            "--total_epoch", 250
+            "--total_epoch", 250,
             #data
             #"--weights_path", weightsPath,
             "--trainings_data_path",training_data_path.as_mount(),
