@@ -116,8 +116,8 @@ if __name__ == "__main__":
             "--model_image_size","416x416",
             #training
             "--decay_type", 'cosine', #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
-            "--transfer_epoch",21,
-            "--total_epoch", 250,
+            "--transfer_epoch",20,
+            "--total_epoch", 150,
             #data
             #"--weights_path", weightsPath,
             "--trainings_data_path",training_data_path.as_mount(),
@@ -160,3 +160,5 @@ if __name__ == "__main__":
     print("Registered model:")
     print(model.name, model.id, model.version, sep='\t')
 
+    cmdEval = "python ../eval.py --model_path ./outputs/trained_final.h5 --anchors_path ../configs/yolo4_anchors.txt --classes_path ../configs/custom_classes.txt --model_image_size 416x416 --eval_typ VOC --annotation_file "+annotation_path.to_path()[0].strip("/")
+    subprocess.call(cmdEval, shell=True)
