@@ -119,7 +119,7 @@ if __name__ == "__main__":
             "--transfer_epoch",20,
             "--total_epoch", 150,
             #data
-            #"--weights_path", weightsPath,
+            "--weights_path", weightsPath,
             "--trainings_data_path",training_data_path.as_mount(),
             "--log_dir", "./outputs",
         ]
