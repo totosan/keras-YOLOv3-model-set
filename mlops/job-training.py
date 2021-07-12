@@ -2,6 +2,9 @@
 
 # imports
 import os
+import io
+import sys
+import time
 import argparse
 import subprocess
 from pathlib import Path
@@ -29,7 +32,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--compute_name",
         type=str,
-        default="gpucluster",
+        default="gpuinstancett",
         help="Name of the used compute system (cluster, instance,...) in Azure ML",
     )
     parser.add_argument(
@@ -49,7 +52,7 @@ if __name__ == "__main__":
     ws = Workspace.from_config()
     ds = ws.get_default_datastore()
 
-    
+
     # Prepare Data: 
     #---------------------------
     
@@ -66,13 +69,12 @@ if __name__ == "__main__":
 
     output_data1 = OutputFileDatasetConfig(destination = (ds, 'outputdataset/{run-id}'))
     output_data_dataset = output_data1.register_on_complete(name = 'prepared_output_data')
-
     # get root of git repo
     prefix = Path(__file__).resolve().parents[1]
 
     # images from datastorage
     training_data_path = Dataset.File.from_files((ds, "YoloTraining/Data/Source_Images/Training_Images/vott-csv-export/"))  
-    annotation_path = Dataset.File.from_files((ds,"YoloTraining/Data/Source_Images/Training_Images/vott-csv-export/*.csv"))
+    annotation_path = Dataset.File.from_files((ds,"YoloTraining/Data/Source_Images/Training_Images/vott-csv-export/*.csv"))  
     
     # weights from datastorage
     weights_ds = Dataset.File.from_files((ds, "Yolo4/Weights/"))
@@ -102,12 +104,13 @@ if __name__ == "__main__":
     env.docker.base_image = 'mcr.microsoft.com/azureml/openmpi3.1.2-cuda10.1-cudnn7-ubuntu18.04'
 
     os.makedirs("./outputs", exist_ok=True)
+    annotationPath = annotation_path.to_path()[0].strip("/")
     weightsPath = weights_ds.as_mount()
     args=[
             # model
             "--model_type","yolo4_mobilenetv2_lite",
             "--anchors_path","configs/yolo4_anchors.txt",
-            "--annotation_file",annotation_path.to_path()[0].strip("/"),
+            "--annotation_file",annotationPath,
             "--classes_path","configs/custom_classes.txt",
             #compute
             "--gpu_num",1,
@@ -117,9 +120,9 @@ if __name__ == "__main__":
             #training
             "--decay_type", 'cosine', #default=None, choices=[None, 'cosine', 'exponential', 'polynomial', 'piecewise_constant']
             "--transfer_epoch",20,
-            "--total_epoch", 150,
+            "--total_epoch", 50,
             #data
-            "--weights_path", weightsPath,
+            #"--weights_path", weightsPath,
             "--trainings_data_path",training_data_path.as_mount(),
             "--log_dir", "./outputs",
         ]
@@ -160,5 +163,13 @@ if __name__ == "__main__":
     print("Registered model:")
     print(model.name, model.id, model.version, sep='\t')
 
-    cmdEval = "python ../eval.py --model_path ./outputs/trained_final.h5 --anchors_path ../configs/yolo4_anchors.txt --classes_path ../configs/custom_classes.txt --model_image_size 416x416 --eval_typ VOC --annotation_file "+annotation_path.to_path()[0].strip("/")
-    subprocess.call(cmdEval, shell=True)
+    cmdEval = "python ./eval.py --model_path ./outputs/trained_final.h5 --anchors_path ../configs/yolo4_anchors.txt --classes_path ../configs/custom_classes.txt --model_image_size 416x416 --eval_typ VOC --annotation_file "+annotationPath
+    process = subprocess.Popen(cmdEval, shell=True, stdout=subprocess.PIPE)
+    while True:
+        output = process.stdout.readline()
+        if output == b'' and process.poll() is not None:
+            break
+        if output:
+            print (output.strip())
+    rc = process.poll()
+    print("eval.py returned with "+str(rc))
