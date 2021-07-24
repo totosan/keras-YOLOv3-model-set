@@ -246,6 +246,7 @@ def _smooth_labels(y_true, label_smoothing):
 
 
 def yolo3_loss(args, anchors, num_classes, ignore_thresh=.5, label_smoothing=0, elim_grid_sense=False, use_focal_loss=False, use_focal_obj_loss=False, use_softmax_loss=False, use_giou_loss=False, use_diou_loss=True):
+    from yolo3.postprocess import yolo3_decode
     '''
     YOLOv3 loss function.
 

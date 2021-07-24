@@ -1323,6 +1323,9 @@ def main():
     Command line options
     '''
     parser.add_argument(
+        '--model_file', type=str, required=True,
+        help='model file name')
+    parser.add_argument(
         '--model_path', type=str, required=True,
         help='path to model file')
 
@@ -1341,7 +1344,11 @@ def main():
     parser.add_argument(
         '--annotation_file', type=str, required=True,
         help='test annotation txt file')
-
+    
+    parser.add_argument(
+        '--test_path', type=str, required=True,
+        help='path with files for evaluation')
+    
     parser.add_argument(
         '--eval_type', type=str, required=False, choices=['VOC', 'COCO'],
         help='evaluation type (VOC/COCO), default=%(default)s', default='VOC')
@@ -1373,6 +1380,15 @@ def main():
 
     args = parser.parse_args()
 
+    # ******* Print ARGS
+    print("")
+    print("== PASSED ARGUMENTS ======================")
+    for arg in vars(args):
+        print(f"{arg} : {getattr(args, arg)} ")
+    print("===================================")    
+    print("")
+    
+    
     # param parse
     anchors = get_anchors(args.anchors_path)
     class_names = get_classes(args.classes_path)
@@ -1386,8 +1402,9 @@ def main():
     else:
         class_filter = None
 
-    annotation_lines = get_dataset(args.annotation_file, shuffle=False)
-    model, model_format = load_eval_model(args.model_path)
+    annotation_lines = get_dataset(args.annotation_file,root_path=args.test_path, shuffle=False)
+    model_location = os.path.join(args.model_path, args.model_file)
+    model, model_format = load_eval_model(model_location)
 
     start = time.time()
     eval_AP(model, model_format, annotation_lines, anchors, class_names, model_image_size, args.eval_type, args.iou_threshold, args.conf_threshold, args.elim_grid_sense, args.v5_decode, args.save_result, class_filter=class_filter)

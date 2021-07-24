@@ -43,7 +43,7 @@ class LogRunMetrics(Callback):
 
 def main(args):
     annotation_file = args.annotation_file
-    trainingsDataPath = args.trainings_data_path
+    trainingsDataPath = os.path.normpath(args.trainings_data_path)
     log_dir = os.path.join('logs', '000')
     classes_path = args.classes_path
     class_names = get_classes(classes_path)

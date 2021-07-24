@@ -111,13 +111,16 @@ def get_dataset(annotation_file, shuffle=True):
 def get_dataset(annotation_file, root_path=None, hasHeader=False, shuffle=True):
     if not root_path:
         root_path = "."    
-    annotationFilePath = os.path.join(root_path,annotation_file)        
+    annotationFilePath = os.path.normpath(os.path.join(root_path,annotation_file))
     print(f"Annotationfile's path: {annotationFilePath}")
     with open(annotationFilePath) as f:
         lines = f.readlines()
         if hasHeader:
             lines.pop(0)
-        lines = [os.path.join(root_path, line.strip()) for line in lines]
+        tempLines = []
+        for line in lines:
+            tempLines.append(os.path.normpath(os.path.join(root_path, line.strip().replace('%','%25'))))
+        lines = tempLines
 
     if shuffle:
         np.random.seed(int(time.time()))
