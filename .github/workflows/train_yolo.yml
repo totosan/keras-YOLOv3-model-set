@@ -11,7 +11,7 @@ on:
     paths:
       - .github/workflows/train_yolo.yml
       - requirements.txt
-      - mlops/*
+#      - mlops/*
 
   workflow_dispatch:
       
