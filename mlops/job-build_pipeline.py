@@ -146,7 +146,8 @@ def main():
             #"--weights_path", weightsPath,
             "--trainings_data_path", training_data_path.as_named_input('Images').as_mount(),
             "--log_dir", outputs_path,
-            #"--eval_online"
+            "--eval_online",
+            "--save_eval_checkpoint"
         ],
         outputs= [outputs_path],
         runconfig=run_config,
